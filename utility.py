@@ -72,7 +72,39 @@ def get_part_data(filename):
     
     return df_part
 
+def components_failure(c,data):
+    """C: component name
+    data: dataframe for all the reparation"""
+    failurelist=[]
+    failure_time=0
+    censored=[]
+    sn=[]
+    key=[]
+    parts=list(data.SN.unique())
+    #grouping data by serial number
+    for s in parts:
+        #selecting repartion data for one serial number
+        selected_part=data[data.SN==s][['Repair PO','Duration(days)', c]]
+        selected_part=selected_part.sort_values(['Repair PO']).reset_index(drop=True)
+        #the age of one component is the sum for all the duration up to the first replacement of this component
+        for i in selected_part.index:
+            if selected_part[c][i]==0:
+                failure_time+=selected_part['Duration(days)'][i]
+            else:
+                failure_time+=selected_part['Duration(days)'][i]
+                failurelist+=[failure_time]
+                sn+=[s]
+                key+=[selected_part['Repair PO'][i]]
+                censored+=[0]
+                failure_time=0
+            if i==max(selected_part.index):
+                failurelist+=[failure_time]
+                sn+=[s]
+                key+=[selected_part['Repair PO'][i]]
+                censored+=[1]
+    return pd.DataFrame({'SN':sn,'Repair PO':key,'Duration(days)':failurelist, 'Censored': censored})
 
 if __name__ == '__main__':
     filename = r'C:\Users\Zhiguo\OneDrive - CentraleSupelec\Code\Python\ge_case_study\2022_ST4\XFD_freq_replacement - Names.xlsx'
     df_part = get_part_data(filename)
+    df_component_EDLC= components_failure('EDLC',get_data_from_excel(filename))
