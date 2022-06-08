@@ -3,6 +3,7 @@
 
 
 ### Import the needed packages. ###
+from isort import file
 import pandas as pd
 from datetime import datetime
 
@@ -25,10 +26,14 @@ def get_data_from_excel(filename):
 
 ### This subfunction reads part data, and extract the time to failure/censoring time.
 # Input: filename: A string indicating the path of the file to be read.
+#        The inputs could also be a dataframe containing all the original data directly.
 # Output: A dataframe containing the part data
-def get_part_data(filename):
-    # Read all the data
-    df_org = get_data_from_excel(filename)
+def get_part_data(filename, data=pd.DataFrame()):
+    if data.empty:
+        # Read all the data
+        df_org = get_data_from_excel(filename)
+    else:
+        df_org = data
 
     # Add a column to record the repair history.
     df_part = df_org.copy()
@@ -116,4 +121,5 @@ if __name__ == '__main__':
     filename = r'C:\Users\Zhiguo\OneDrive - CentraleSupelec\Code\Python\ge_case_study\2022_ST4\XFD_freq_replacement - Names.xlsx'
     # df_part = get_part_data(filename)
     # df_component_EDLC= components_failure('EDLC',get_data_from_excel(filename))
-    df_component_V700_Mosfet = components_failure('V700 Mosfet', get_data_from_excel(filename))
+    df_component = components_failure('V700 Rectifier board', get_data_from_excel(filename))
+    print(df_component[df_component['Duration(days)']==0])
